@@ -145,6 +145,13 @@ def _process_lc_bin(itime, name, config, basedir, workdir, diff_sources, const_s
                 if 'tmin' in component['selection']:
                     component['selection']['tmax'] = time[1]
 
+    xvals = None
+    
+    if config['gtlike']['llscan_min'] and config['gtlike']['llscan_max']:
+
+        xvals = 10**np.linspace(config['gtlike']['llscan_min'],
+                            config['gtlike']['llscan_max'],
+                            config['gtlike']['llscan_npts'])
 
     # create output directories labeled in MET vals
     outdir = basedir + 'lightcurve_%.0f_%.0f' % (time[0], time[1])
@@ -189,12 +196,12 @@ def _process_lc_bin(itime, name, config, basedir, workdir, diff_sources, const_s
 
     fit_results = _fit_lc(gta, name, **kwargs)
     gta.write_xml('fit_model_final.xml')
-    srcmodel = copy.deepcopy(gta.get_src_model(name))
+    srcmodel = copy.deepcopy(gta.get_src_model(name, xvals = xvals))
     numfree = gta.get_free_param_vector().count(True)
     
-    const_srcmodel = gta.get_src_model(name).copy()
+    const_srcmodel = gta.get_src_model(name, xvals = xvals).copy()
     fixed_fit_results = fit_results.copy()
-    fixed_srcmodel = gta.get_src_model(name).copy()
+    fixed_srcmodel = gta.get_src_model(name, xvals = xvals).copy()
     fixed_fit_results['fit_success'],fixed_srcmodel['fit_success'] = [False,False]
     fixed_fit_results['fit_quality'],fixed_srcmodel['fit_quality'] = [0,0]
     max_ts_thresholds = [None, 4, 9, 16, 25]
@@ -235,7 +242,7 @@ def _process_lc_bin(itime, name, config, basedir, workdir, diff_sources, const_s
     if fit_results['fit_success'] == 1:
         for k in defaults.source_flux_output.keys():
             if not k in srcmodel:
-                continue
+                continue    
             o[k] = srcmodel[k]
             o[k+'_fixed'] = fixed_srcmodel[k]
 
@@ -472,7 +479,6 @@ class LightCurve(object):
                 flux_const = next_fit['flux_const']                
             
             for k in o.keys():
-
                 if k == 'config':
                     continue
                 if not k in next_fit:

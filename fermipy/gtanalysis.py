@@ -2478,7 +2478,6 @@ class GTAnalysis(fermipy.config.Configurable, sed.SEDGenerator,
                     xvals = np.linspace(lims['ll'], lims['ul'], npts)
 
         self.logger.debug('xvals dimension: %s , npts=%d' %(xvals.shape,npts))
-
         o = self.profile(name, parName,
                          reoptimize=reoptimize, xvals=xvals,
                          savestate=savestate, **kwargs)
@@ -4121,7 +4120,7 @@ class GTAnalysis(fermipy.config.Configurable, sed.SEDGenerator,
         src.update_data(sd)
 
     def get_src_model(self, name, paramsonly=False, reoptimize=False,
-                      npts=None, **kwargs):
+                      npts=None, xvals = None, **kwargs):
         """Compose a dictionary for a source with the current best-fit
         parameters.
 
@@ -4275,7 +4274,7 @@ class GTAnalysis(fermipy.config.Configurable, sed.SEDGenerator,
         #  exc_info=True)
         lnlp = self.profile_norm(name, savestate=True,
                                  reoptimize=reoptimize, npts=npts,
-                                 optimizer=optimizer)
+                                 optimizer=optimizer, xvals=xvals)
 
         src_dict['loglike_scan'] = lnlp['loglike']
         src_dict['dloglike_scan'] = lnlp['dloglike']
